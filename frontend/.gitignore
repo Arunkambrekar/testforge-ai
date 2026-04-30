@@ -1,0 +1,78 @@
+# =========================
+# Node / Next.js
+# =========================
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+.next/
+out/
+build/
+
+coverage/
+
+# =========================
+# Python / FastAPI
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+venv/
+env/
+ENV/
+.venv/
+
+# Python logs
+*.log
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Debug logs
+# =========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Vercel / Deployment
+# =========================
+.vercel
+
+# =========================
+# Misc
+# =========================
+*.pem
+*.tsbuildinfo
+next-env.d.ts
+
+# =========================
+# Optional (if generated)
+# =========================
+dist/
+reports/
