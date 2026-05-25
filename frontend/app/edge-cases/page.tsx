@@ -1,12 +1,5 @@
 "use client";
 
-const [provider, setProvider] = useState("groq");
-
-useEffect(() => {
-  const saved = localStorage.getItem("ai_provider");
-  if (saved) setProvider(saved);
-}, []);
-
 import { useEffect, useState } from "react";
 import { generateEdgeCases } from "@/lib/api";
 
@@ -76,6 +69,12 @@ export default function EdgeCasesPage() {
   const [activeCategory, setActiveCategory] = useState(0);
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [provider, setProvider] = useState("groq");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("ai_provider");
+    if (saved) setProvider(saved);
+  }, []);
 
   const handleGenerate = async () => {
     if (!featureDescription.trim()) {
@@ -99,7 +98,12 @@ export default function EdgeCasesPage() {
 
   const handleCopyAll = () => {
     if (!result) return;
-    const lines: string[] = [`EDGE CASE ANALYSIS — ${result.feature_summary}`, `Coverage Score: ${result.coverage_score}/100 | Risk: ${result.risk_level}`, `Total Cases: ${result.total_edge_cases}`, ""];
+    const lines: string[] = [
+      `EDGE CASE ANALYSIS — ${result.feature_summary}`,
+      `Coverage Score: ${result.coverage_score}/100 | Risk: ${result.risk_level}`,
+      `Total Cases: ${result.total_edge_cases}`,
+      "",
+    ];
     result.categories.forEach(cat => {
       lines.push(`\n== ${cat.name} (${cat.risk}) ==`);
       cat.cases.forEach(c => {
@@ -140,7 +144,7 @@ export default function EdgeCasesPage() {
             <span className="text-gray-700">|</span>
             <span className="text-blue-400 font-semibold">TestForgeAI</span>
           </div>
-         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">Using:</span>
             <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-full">
               {provider === "groq" ? "⚡ Groq" : provider === "openai" ? "OpenAI" : "Claude"}
@@ -269,7 +273,6 @@ export default function EdgeCasesPage() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
-                    {/* Coverage Score */}
                     <div className="bg-gray-800 rounded-xl p-4 text-center">
                       <div className={`text-3xl font-bold ${scoreColor(result.coverage_score)}`}>
                         {result.coverage_score}
@@ -284,7 +287,6 @@ export default function EdgeCasesPage() {
                       </div>
                     </div>
 
-                    {/* Risk Level */}
                     <div className="bg-gray-800 rounded-xl p-4 text-center">
                       <div className={`text-2xl font-bold ${riskColor(result.risk_level).split(" ")[0]}`}>
                         {result.risk_level}
@@ -297,7 +299,6 @@ export default function EdgeCasesPage() {
                       </div>
                     </div>
 
-                    {/* Cases Found */}
                     <div className="bg-gray-800 rounded-xl p-4 text-center">
                       <div className="text-3xl font-bold text-blue-400">{result.total_edge_cases}</div>
                       <p className="text-gray-500 text-xs mt-1">Cases Found</p>
@@ -328,7 +329,7 @@ export default function EdgeCasesPage() {
 
                 {/* Category Tabs */}
                 <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-                  <div className="flex overflow-x-auto border-b border-gray-800 scrollbar-hide">
+                  <div className="flex overflow-x-auto border-b border-gray-800">
                     {result.categories?.map((cat, i) => (
                       <button
                         key={i}
@@ -347,13 +348,9 @@ export default function EdgeCasesPage() {
                     ))}
                   </div>
 
-                  {/* Cases List */}
-                  <div className="p-4 space-y-3 max-h-125[500px] overflow-y-auto">
+                  <div className="p-4 space-y-3 overflow-y-auto max-h-[500px]">
                     {result.categories?.[activeCategory]?.cases?.map((ec) => (
-                      <div
-                        key={ec.id}
-                        className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden"
-                      >
+                      <div key={ec.id} className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
                         <button
                           onClick={() => setExpandedCase(expandedCase === ec.id ? null : ec.id)}
                           className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-700/50 transition-all"
