@@ -1,9 +1,7 @@
-@"
-fastapi
+﻿fastapi
 uvicorn[standard]
 httpx
 python-dotenv
 groq
 openai
 anthropic
-"@ | Out-File -FilePath requirements.txt -Encoding utf8
