@@ -1,12 +1,5 @@
 "use client";
 
-const [provider, setProvider] = useState("groq");
-
-useEffect(() => {
-  const saved = localStorage.getItem("ai_provider");
-  if (saved) setProvider(saved);
-}, []);
-
 import { generateTestData } from "@/lib/api";
 import { useState, useEffect } from "react";
 
@@ -36,23 +29,29 @@ const DATA_TYPES = [
 ];
 
 const categoryConfig: Record<string, { label: string; color: string; bg: string; icon: string }> = {
-  valid_data:         { label: "Valid Data",         color: "text-green-400",  bg: "bg-green-500/10 border-green-500/20",  icon: "✅" },
-  invalid_data:       { label: "Invalid Data",       color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20",      icon: "❌" },
-  boundary_data:      { label: "Boundary Values",    color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20",    icon: "📏" },
+  valid_data:         { label: "Valid Data",         color: "text-green-400",  bg: "bg-green-500/10 border-green-500/20",   icon: "✅" },
+  invalid_data:       { label: "Invalid Data",       color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20",       icon: "❌" },
+  boundary_data:      { label: "Boundary Values",    color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20",     icon: "📏" },
   special_characters: { label: "Special Characters", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", icon: "🔣" },
   edge_cases:         { label: "Edge Cases",         color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20", icon: "⚠️" },
   sql_injection:      { label: "SQL Injection",      color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20", icon: "💉" },
 };
 
 export default function TestDataPage() {
+  const [provider, setProvider]             = useState("groq");
   const [fieldDescription, setFieldDescription] = useState("");
-  const [dataType, setDataType]                 = useState("Text");
-  const [constraints, setConstraints]           = useState("");
-  const [loading, setLoading]                   = useState(false);
-  const [result, setResult]                     = useState<TestDataResult | null>(null);
-  const [error, setError]                       = useState("");
-  const [activeTab, setActiveTab]               = useState("valid_data");
-  const [copied, setCopied]                     = useState(false);
+  const [dataType, setDataType]             = useState("Text");
+  const [constraints, setConstraints]       = useState("");
+  const [loading, setLoading]               = useState(false);
+  const [result, setResult]                 = useState<TestDataResult | null>(null);
+  const [error, setError]                   = useState("");
+  const [activeTab, setActiveTab]           = useState("valid_data");
+  const [copied, setCopied]                 = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("ai_provider");
+    if (saved) setProvider(saved);
+  }, []);
 
   const handleGenerate = async () => {
     if (!fieldDescription.trim()) {
@@ -106,27 +105,27 @@ export default function TestDataPage() {
       const items = result[key as keyof TestDataResult] as TestDataItem[] | undefined;
       if (items?.length) {
         items.forEach((item) => {
-          const val = `"${item.value?.toString().replace(/"/g, '""')}"`;
+          const val  = `"${item.value?.toString().replace(/"/g, '""')}"`;
           const desc = `"${item.description?.replace(/"/g, '""')}"`;
-          const exp = `"${item.expected_result?.replace(/"/g, '""')}"`;
+          const exp  = `"${item.expected_result?.replace(/"/g, '""')}"`;
           rows.push(`${categoryConfig[key].label},${val},${desc},${exp}`);
         });
       }
     });
     const blob = new Blob([rows.join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
     a.download = `test-data-${dataType.toLowerCase()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const examples = [
-    { field: "Email address field for user registration", type: "Email", constraints: "Must be valid format, max 254 chars" },
-    { field: "Password field with strength requirements", type: "Password", constraints: "Min 8 chars, uppercase, number, special char" },
-    { field: "Phone number field for Indian users", type: "Phone Number", constraints: "10 digits, starts with 6-9" },
-    { field: "Age field for user profile", type: "Number", constraints: "Must be between 18 and 100" },
+    { field: "Email address field for user registration",   type: "Email",        constraints: "Must be valid format, max 254 chars" },
+    { field: "Password field with strength requirements",   type: "Password",     constraints: "Min 8 chars, uppercase, number, special char" },
+    { field: "Phone number field for Indian users",         type: "Phone Number", constraints: "10 digits, starts with 6-9" },
+    { field: "Age field for user profile",                  type: "Number",       constraints: "Must be between 18 and 100" },
   ];
 
   const activeItems = result
@@ -166,8 +165,6 @@ export default function TestDataPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left — Input */}
           <div className="space-y-4">
-
-            {/* Field Description */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Field Description <span className="text-red-400">*</span>
@@ -180,7 +177,6 @@ export default function TestDataPage() {
               />
             </div>
 
-            {/* Data Type */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
               <label className="block text-sm font-medium text-gray-300 mb-2">Data Type</label>
               <select
@@ -192,7 +188,6 @@ export default function TestDataPage() {
               </select>
             </div>
 
-            {/* Constraints */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Constraints <span className="text-gray-500 text-xs">(optional)</span>
@@ -205,7 +200,6 @@ export default function TestDataPage() {
               />
             </div>
 
-            {/* Examples */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
               <p className="text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider">Quick Examples</p>
               <div className="space-y-2">
@@ -225,7 +219,6 @@ export default function TestDataPage() {
               </div>
             </div>
 
-            {/* Generate Button */}
             <button
               onClick={handleGenerate}
               disabled={loading}
@@ -275,7 +268,6 @@ export default function TestDataPage() {
 
             {result && (
               <div className="space-y-4">
-                {/* Summary bar */}
                 <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
                   <div>
                     <p className="text-white font-semibold">{result.field_name || fieldDescription}</p>
@@ -297,13 +289,12 @@ export default function TestDataPage() {
                   </div>
                 </div>
 
-                {/* Category Tabs */}
                 <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
                   <div className="flex overflow-x-auto border-b border-gray-800">
                     {Object.keys(categoryConfig).map((key) => {
                       const items = result[key as keyof TestDataResult] as TestDataItem[] | undefined;
                       const count = items?.length ?? 0;
-                      const cfg = categoryConfig[key];
+                      const cfg   = categoryConfig[key];
                       return (
                         <button
                           key={key}
@@ -321,7 +312,6 @@ export default function TestDataPage() {
                     })}
                   </div>
 
-                  {/* Data Table */}
                   <div className="p-4">
                     {activeItems.length === 0 ? (
                       <p className="text-gray-600 text-sm text-center py-8">No data in this category</p>
@@ -349,7 +339,6 @@ export default function TestDataPage() {
                   </div>
                 </div>
 
-                {/* Summary */}
                 {result.summary && (
                   <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
                     <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Summary</p>
