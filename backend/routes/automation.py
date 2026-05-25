@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.claude_service import call_claude
+from services.llm_service import call_llm
 from prompts.automation import get_automation_prompt
 import json
 import re
@@ -11,6 +11,7 @@ class AutomationRequest(BaseModel):
     flow_description: str
     base_url: str = "https://example.com"
     framework: str = "Playwright + PyTest"
+    provider: str = "groq"
 
 @router.post("/generate")
 async def generate_automation_script(request: AutomationRequest):
@@ -24,7 +25,7 @@ async def generate_automation_script(request: AutomationRequest):
             framework=request.framework
         )
 
-        response_text = await call_claude(prompt)
+        response_text = await call_llm(prompt, provider=request.provider)
 
         clean = response_text.strip()
         clean = re.sub(r'```json\s*', '', clean)
@@ -39,5 +40,7 @@ async def generate_automation_script(request: AutomationRequest):
 
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=500, detail=f"JSON parse error: {str(e)}")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

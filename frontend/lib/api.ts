@@ -1,18 +1,29 @@
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // ─── Test Case Generator ───────────────────────────────────────
-export async function generateTests(feature: string, context: string) {
+export async function generateTests(data: {
+  feature: string;
+  context?: string;
+  provider: string;
+}) {
   const response = await fetch(`${BASE_URL}/api/generator/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ feature, context }),
+    body: JSON.stringify({
+      feature: data.feature,
+      context: data.context || "",
+      provider: data.provider, // ✅ REQUIRED
+    }),
   });
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to generate tests");
   }
+
   return response.json();
 }
+
 
 // ─── API Test Generator ────────────────────────────────────────
 export async function generateApiTests(data: {
@@ -26,12 +37,15 @@ export async function generateApiTests(data: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to generate API tests");
   }
+
   return response.json();
 }
+
 
 // ─── Automation Script Generator ──────────────────────────────
 export async function generateAutomationScript(
@@ -48,12 +62,15 @@ export async function generateAutomationScript(
       framework: framework,
     }),
   });
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to generate automation script");
   }
+
   return response.json();
 }
+
 
 // ─── Bug Report Generator ─────────────────────────────────────
 export async function generateBugReport(
@@ -70,12 +87,15 @@ export async function generateBugReport(
       severity: severity,
     }),
   });
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to generate bug report");
   }
+
   return response.json();
 }
+
 
 // ─── Edge Case Suggester ───────────────────────────────────────
 export async function generateEdgeCases(data: {
@@ -87,12 +107,15 @@ export async function generateEdgeCases(data: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to generate edge cases");
   }
+
   return response.json();
 }
+
 
 // ─── Test Data Generator ───────────────────────────────────────
 export async function generateTestData(data: {
@@ -105,20 +128,28 @@ export async function generateTestData(data: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to generate test data");
   }
+
   return response.json();
 }
 
+
+// ─── AI Error Explainer ───────────────────────────────────────
 export async function explainError(data: {
   error_input: string;
+  provider: string;
 }) {
   const response = await fetch(`${BASE_URL}/api/ai-explain/explain`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      error_input: data.error_input,
+      provider: data.provider, // ✅ REQUIRED
+    }),
   });
 
   if (!response.ok) {

@@ -1,6 +1,13 @@
 "use client";
 
-import { useState } from "react";
+const [provider, setProvider] = useState("groq");
+
+useEffect(() => {
+  const saved = localStorage.getItem("ai_provider");
+  if (saved) setProvider(saved);
+}, []);
+
+import { useEffect, useState } from "react";
 import { generateEdgeCases } from "@/lib/api";
 
 interface EdgeCase {
@@ -133,9 +140,12 @@ export default function EdgeCasesPage() {
             <span className="text-gray-700">|</span>
             <span className="text-blue-400 font-semibold">TestForgeAI</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-            AI Ready
+         <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Using:</span>
+            <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-full">
+              {provider === "groq" ? "⚡ Groq" : provider === "openai" ? "OpenAI" : "Claude"}
+            </span>
+            <a href="/" className="text-xs text-gray-600 hover:text-gray-400 transition">Change →</a>
           </div>
         </div>
       </div>

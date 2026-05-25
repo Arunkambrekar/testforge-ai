@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateApiTests } from "@/lib/api";
 
 const priorityColor: Record<string, string> = {
@@ -35,15 +35,27 @@ function safeJson(val: unknown): string {
   catch { return "Invalid JSON"; }
 }
 
+const providerLabel: Record<string, string> = {
+  groq: "⚡ Groq",
+  openai: "OpenAI",
+  claude: "Claude",
+};
+
 export default function APITestsPage() {
   const [endpoint, setEndpoint]       = useState("");
   const [method, setMethod]           = useState("POST");
   const [description, setDescription] = useState("");
   const [payload, setPayload]         = useState("");
+  const [provider, setProvider]       = useState("groq");
   const [loading, setLoading]         = useState(false);
   const [result, setResult]           = useState<Record<string, unknown> | null>(null);
   const [error, setError]             = useState("");
   const [showSample, setShowSample]   = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("ai_provider");
+    if (saved) setProvider(saved);
+  }, []);
 
   async function handleGenerate() {
     if (!endpoint.trim()) {
@@ -72,17 +84,20 @@ export default function APITestsPage() {
     <main className="min-h-screen bg-gray-950 text-white">
 
       {/* Header */}
-      <div className="border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-        <a href="/" className="text-gray-400 hover:text-white text-sm">
-          &larr; Back
-        </a>
-        <div>
-          <h1 className="text-lg font-bold text-blue-400">
-            🌐 API Test Generator
-          </h1>
-          <p className="text-gray-500 text-xs">
-            Enter endpoint &rarr; Get positive, negative and security tests
-          </p>
+      <div className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <a href="/" className="text-gray-400 hover:text-white text-sm">← Back</a>
+          <div>
+            <h1 className="text-lg font-bold text-blue-400">🌐 API Test Generator</h1>
+            <p className="text-gray-500 text-xs">Enter endpoint → Get positive, negative and security tests</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">Using:</span>
+          <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-full">
+            {providerLabel[provider] ?? provider}
+          </span>
+          <a href="/" className="text-xs text-gray-600 hover:text-gray-400 transition">Change →</a>
         </div>
       </div>
 
@@ -90,8 +105,6 @@ export default function APITestsPage() {
 
         {/* Input Card */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-
-          {/* Method + Endpoint */}
           <div className="flex gap-3 mb-4">
             <div>
               <label className="block text-sm text-gray-400 mb-2">Method *</label>
@@ -100,9 +113,7 @@ export default function APITestsPage() {
                 onChange={(e) => setMethod(e.target.value)}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-3 text-white focus:outline-none focus:border-blue-500"
               >
-                {HTTP_METHODS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
+                {HTTP_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div className="flex-1">
@@ -116,11 +127,8 @@ export default function APITestsPage() {
             </div>
           </div>
 
-          {/* Description */}
           <div className="mb-4">
-            <label className="block text-sm text-gray-400 mb-2">
-              Description (optional)
-            </label>
+            <label className="block text-sm text-gray-400 mb-2">Description (optional)</label>
             <input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -129,11 +137,8 @@ export default function APITestsPage() {
             />
           </div>
 
-          {/* Payload */}
           <div className="mb-5">
-            <label className="block text-sm text-gray-400 mb-2">
-              Sample Request Body (optional)
-            </label>
+            <label className="block text-sm text-gray-400 mb-2">Sample Request Body (optional)</label>
             <textarea
               value={payload}
               onChange={(e) => setPayload(e.target.value)}
@@ -143,14 +148,12 @@ export default function APITestsPage() {
             />
           </div>
 
-          {/* Error */}
           {error && (
             <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
               ⚠️ {error}
             </div>
           )}
 
-          {/* Button */}
           <button
             onClick={handleGenerate}
             disabled={loading}
@@ -171,8 +174,6 @@ export default function APITestsPage() {
         {/* Results */}
         {result && (
           <div>
-
-            {/* Summary */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-5">
               <div className="flex flex-wrap gap-8 mb-4">
                 <div>
@@ -198,7 +199,6 @@ export default function APITestsPage() {
               </div>
             </div>
 
-            {/* Sample toggle */}
             <button
               onClick={() => setShowSample(!showSample)}
               className="w-full bg-gray-900 border border-gray-800 rounded-xl p-4 mb-5 text-left hover:border-gray-600 transition-all"
@@ -221,7 +221,6 @@ export default function APITestsPage() {
               </div>
             )}
 
-            {/* Test Cases */}
             <div className="space-y-4 mb-6">
               {testCases.map((tc) => {
                 const reqBody = (() => {
@@ -232,13 +231,10 @@ export default function APITestsPage() {
                   if (keys.length === 0) return null;
                   return body as Record<string, unknown>;
                 })();
-
                 const validationPoints = (tc.validation_points as string[] | undefined) ?? [];
 
                 return (
-                  <div key={safeStr(tc.id)}
-                    className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-600 transition-all">
-
+                  <div key={safeStr(tc.id)} className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-600 transition-all">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <span className="text-gray-500 text-sm font-mono">{safeStr(tc.id)}</span>
@@ -255,29 +251,24 @@ export default function APITestsPage() {
                         </span>
                       </div>
                     </div>
-
                     <h3 className="text-white font-semibold mb-1">{safeStr(tc.title)}</h3>
                     <p className="text-gray-400 text-sm mb-4">{safeStr(tc.description)}</p>
-
                     {reqBody && (
                       <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
                         <p className="text-gray-500 text-xs mb-2">Request Body</p>
                         <pre className="text-yellow-400 text-xs overflow-auto">{safeJson(reqBody)}</pre>
                       </div>
                     )}
-
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-3 mb-3">
                       <p className="text-gray-500 text-xs mb-1">Expected Response</p>
                       <p className="text-green-400 text-sm">{safeStr(tc.expected_response)}</p>
                     </div>
-
                     <div>
                       <p className="text-gray-500 text-xs uppercase tracking-wider mb-2">Validation Points</p>
                       <ul className="space-y-1">
                         {validationPoints.map((point, i) => (
                           <li key={i} className="text-gray-300 text-sm flex gap-2">
-                            <span className="text-blue-400">✓</span>
-                            {point}
+                            <span className="text-blue-400">✓</span>{point}
                           </li>
                         ))}
                       </ul>
@@ -287,21 +278,16 @@ export default function APITestsPage() {
               })}
             </div>
 
-            {/* Security Checks */}
             <div className="bg-gray-900 border border-yellow-500/20 rounded-xl p-5">
-              <p className="text-yellow-400 text-xs uppercase tracking-wider mb-3">
-                🔒 Security Checks To Perform
-              </p>
+              <p className="text-yellow-400 text-xs uppercase tracking-wider mb-3">🔒 Security Checks To Perform</p>
               <ul className="space-y-2">
                 {securityChecks.map((check, i) => (
                   <li key={i} className="text-gray-300 text-sm flex gap-2">
-                    <span className="text-yellow-400">⚠</span>
-                    {check}
+                    <span className="text-yellow-400">⚠</span>{check}
                   </li>
                 ))}
               </ul>
             </div>
-
           </div>
         )}
       </div>

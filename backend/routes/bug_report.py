@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.claude_service import get_claude_response
+from typing import Optional
+from services.llm_service import call_llm
 from prompts.bug_report import get_bug_report_prompt
 import json, re
 
@@ -10,6 +11,7 @@ class BugReportRequest(BaseModel):
     raw_description: str
     app_type: str = "Web Application"
     severity: str = "Medium"
+    provider: str = "groq"
 
 @router.post("/generate")
 async def generate_bug_report(request: BugReportRequest):
@@ -26,7 +28,7 @@ async def generate_bug_report(request: BugReportRequest):
             severity=request.severity
         )
 
-        raw = await get_claude_response(prompt)
+        raw = await call_llm(prompt, provider=request.provider)
 
         cleaned = re.sub(r"```json\s*", "", raw.strip())
         cleaned = re.sub(r"```\s*", "", cleaned).strip()

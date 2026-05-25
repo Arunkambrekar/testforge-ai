@@ -1,5 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+
+# ✅ Load FIRST before anything else
+load_dotenv()
+
 from routes import generator, api_tests, automation, bug_report, edge_cases, test_data, ai_explain
 
 app = FastAPI(title="TestForgeAI API")

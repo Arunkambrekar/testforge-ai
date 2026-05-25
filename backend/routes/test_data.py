@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.claude_service import get_claude_response
+from services.llm_service import call_llm
 from prompts.test_data import get_test_data_prompt
 import json, re
 
@@ -10,6 +10,7 @@ class TestDataRequest(BaseModel):
     field_description: str
     data_type: str = "Text"
     constraints: str = ""
+    provider: str = "groq"
 
 @router.post("/generate")
 async def generate_test_data(request: TestDataRequest):
@@ -23,7 +24,7 @@ async def generate_test_data(request: TestDataRequest):
             constraints=request.constraints
         )
 
-        raw = await get_claude_response(prompt)
+        raw = await call_llm(prompt, provider=request.provider)
 
         cleaned = re.sub(r"```json\s*", "", raw.strip())
         cleaned = re.sub(r"```\s*", "", cleaned).strip()

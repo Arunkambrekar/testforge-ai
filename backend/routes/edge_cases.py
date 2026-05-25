@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.claude_service import get_claude_response
+from services.llm_service import call_llm
 from prompts.edge_cases import get_edge_cases_prompt
 import json, re
 
@@ -9,6 +9,7 @@ router = APIRouter()
 class EdgeCaseRequest(BaseModel):
     feature_description: str
     feature_type: str = "Web Application"
+    provider: str = "groq"
 
 @router.post("/generate")
 async def generate_edge_cases(request: EdgeCaseRequest):
@@ -21,7 +22,7 @@ async def generate_edge_cases(request: EdgeCaseRequest):
             feature_type=request.feature_type
         )
 
-        raw = await get_claude_response(prompt)
+        raw = await call_llm(prompt, provider=request.provider)
 
         cleaned = re.sub(r"```json\s*", "", raw.strip())
         cleaned = re.sub(r"```\s*", "", cleaned).strip()

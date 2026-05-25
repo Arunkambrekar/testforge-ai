@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from services.claude_service import call_claude
-from prompts.api_test import get_prompt
+from services.llm_service import call_llm
 import json
 import re
+from prompts.api_test import get_prompt
 
 router = APIRouter()
 
@@ -13,6 +13,7 @@ class APIInput(BaseModel):
     method: str
     description: Optional[str] = ""
     payload: Optional[str] = ""
+    provider: str = "groq"  # ← changed from "openai"
 
 @router.post("/generate")
 async def generate_api_tests(body: APIInput):
@@ -27,7 +28,7 @@ async def generate_api_tests(body: APIInput):
             body.payload or ""
         )
 
-        raw = await call_claude(prompt)
+        raw = await call_llm(prompt, provider=body.provider)
 
         # Clean response
         clean = raw.strip()

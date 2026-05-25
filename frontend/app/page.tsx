@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 const features = [
   {
@@ -62,51 +63,34 @@ const features = [
 ];
 
 const accentMap: Record<string, { border: string; icon: string; badge: string; btn: string }> = {
-  blue: {
-    border: "hover:border-blue-500/60",
-    icon: "bg-blue-500/15 border-blue-500/30",
-    badge: "bg-blue-500/20 text-blue-400",
-    btn: "bg-blue-600 hover:bg-blue-500",
-  },
-  cyan: {
-    border: "hover:border-cyan-500/60",
-    icon: "bg-cyan-500/15 border-cyan-500/30",
-    badge: "bg-cyan-500/20 text-cyan-400",
-    btn: "bg-cyan-600 hover:bg-cyan-500",
-  },
-  purple: {
-    border: "hover:border-purple-500/60",
-    icon: "bg-purple-500/15 border-purple-500/30",
-    badge: "bg-purple-500/20 text-purple-400",
-    btn: "bg-purple-600 hover:bg-purple-500",
-  },
-  orange: {
-    border: "hover:border-orange-500/60",
-    icon: "bg-orange-500/15 border-orange-500/30",
-    badge: "bg-orange-500/20 text-orange-400",
-    btn: "bg-orange-600 hover:bg-orange-500",
-  },
-  yellow: {
-    border: "hover:border-yellow-500/60",
-    icon: "bg-yellow-500/15 border-yellow-500/30",
-    badge: "bg-yellow-500/20 text-yellow-400",
-    btn: "bg-yellow-600 hover:bg-yellow-500",
-  },
-  green: {
-    border: "hover:border-green-500/60",
-    icon: "bg-green-500/15 border-green-500/30",
-    badge: "bg-green-500/20 text-green-400",
-    btn: "bg-green-600 hover:bg-green-500",
-  },
-  red: {
-    border: "hover:border-red-500/60",
-    icon: "bg-red-500/15 border-red-500/30",
-    badge: "bg-red-500/20 text-red-400",
-    btn: "bg-red-600 hover:bg-red-500",
-  },
+  blue:   { border: "hover:border-blue-500/60",   icon: "bg-blue-500/15 border-blue-500/30",   badge: "bg-blue-500/20 text-blue-400",   btn: "bg-blue-600 hover:bg-blue-500" },
+  cyan:   { border: "hover:border-cyan-500/60",   icon: "bg-cyan-500/15 border-cyan-500/30",   badge: "bg-cyan-500/20 text-cyan-400",   btn: "bg-cyan-600 hover:bg-cyan-500" },
+  purple: { border: "hover:border-purple-500/60", icon: "bg-purple-500/15 border-purple-500/30", badge: "bg-purple-500/20 text-purple-400", btn: "bg-purple-600 hover:bg-purple-500" },
+  orange: { border: "hover:border-orange-500/60", icon: "bg-orange-500/15 border-orange-500/30", badge: "bg-orange-500/20 text-orange-400", btn: "bg-orange-600 hover:bg-orange-500" },
+  yellow: { border: "hover:border-yellow-500/60", icon: "bg-yellow-500/15 border-yellow-500/30", badge: "bg-yellow-500/20 text-yellow-400", btn: "bg-yellow-600 hover:bg-yellow-500" },
+  green:  { border: "hover:border-green-500/60",  icon: "bg-green-500/15 border-green-500/30",  badge: "bg-green-500/20 text-green-400",  btn: "bg-green-600 hover:bg-green-500" },
+  red:    { border: "hover:border-red-500/60",    icon: "bg-red-500/15 border-red-500/30",    badge: "bg-red-500/20 text-red-400",    btn: "bg-red-600 hover:bg-red-500" },
+};
+
+const providerLabels: Record<string, string> = {
+  groq: "⚡ Groq (Free)",
+  openai: "OpenAI",
+  claude: "Claude",
 };
 
 export default function HomePage() {
+  const [provider, setProvider] = useState("groq");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("ai_provider");
+    if (saved) setProvider(saved);
+  }, []);
+
+  const handleProviderChange = (val: string) => {
+    setProvider(val);
+    localStorage.setItem("ai_provider", val);
+  };
+
   return (
     <main className="min-h-screen bg-gray-950 text-white">
       {/* Top bar */}
@@ -116,9 +100,29 @@ export default function HomePage() {
             <span className="text-blue-400 font-bold text-lg tracking-tight">TestForgeAI</span>
             <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30">Beta</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-            All systems operational
+
+          {/* Global AI Provider Selector */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-500">AI Provider:</span>
+            <div className="flex items-center gap-1 bg-gray-800 border border-gray-700 rounded-lg p-1">
+              {["groq", "openai", "claude"].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => handleProviderChange(p)}
+                  className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                    provider === p
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {providerLabels[p]}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+              All systems operational
+            </div>
           </div>
         </div>
       </div>
@@ -134,7 +138,7 @@ export default function HomePage() {
             <span className="block text-blue-400">10× faster</span>
           </h1>
           <p className="text-gray-400 text-lg max-w-xl mx-auto">
-            Generate test cases, automation scripts, bug reports, and more — powered by Claude AI.
+            Generate test cases, automation scripts, bug reports, and more — powered by AI.
           </p>
         </div>
 
@@ -143,7 +147,7 @@ export default function HomePage() {
           {[
             { label: "Features", value: "7" },
             { label: "Live Now", value: "7" },
-            { label: "AI Model", value: "Claude" },
+            { label: "AI Model", value: providerLabels[provider] },
           ].map((stat) => (
             <div key={stat.label} className="text-center bg-gray-900 border border-gray-800 rounded-xl py-4">
               <div className="text-2xl font-bold text-white">{stat.value}</div>
@@ -189,10 +193,7 @@ export default function HomePage() {
             }
 
             return (
-              <div
-                key={feature.href}
-                className="block bg-gray-900 border border-gray-800 rounded-2xl p-6 opacity-60 cursor-default"
-              >
+              <div key={feature.href} className="block bg-gray-900 border border-gray-800 rounded-2xl p-6 opacity-60 cursor-default">
                 {cardContent}
               </div>
             );
@@ -201,7 +202,7 @@ export default function HomePage() {
 
         {/* Footer */}
         <p className="text-center text-gray-700 text-sm mt-16">
-          Built with FastAPI · Next.js · Claude AI
+          Built with FastAPI · Next.js · AI
         </p>
       </div>
     </main>
